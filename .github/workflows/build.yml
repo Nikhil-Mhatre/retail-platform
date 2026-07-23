@@ -38,7 +38,7 @@ jobs:
       DOCKERFILE: src/${{ inputs.service_name }}/Dockerfile
 
     outputs:
-      image_repository: ${{ env.IMAGE_REPOSITORY }}
+      image_repository: ${{ steps.image-repository.outputs.image_repository }}
       image_tag: ${{ steps.generate-tag.outputs.image_tag }}
 
     steps:
@@ -60,6 +60,12 @@ jobs:
       - name: Generate Image Tag
         id: generate-tag
         uses: ./.github/actions/generate-tag
+
+      - name: Export image repository
+        id: image-repository
+        shell: bash
+        run: |
+          echo "image_repository=$IMAGE_REPOSITORY" >> "$GITHUB_OUTPUT"
 
       - name: Login to Docker Hub
         uses: ./.github/actions/docker-login
