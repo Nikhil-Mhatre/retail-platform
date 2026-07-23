@@ -1,0 +1,83 @@
+name: Build Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: Name of the microservice.
+        required: true
+        type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+    outputs:
+      image_repository:
+        description: Docker image repository.
+        value: ${{ jobs.build.outputs.image_repository }}
+      image_tag:
+        description: Generated Docker image tag.
+        value: ${{ jobs.build.outputs.image_tag }}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ inputs.service_name }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/retail_platform_${{ inputs.service_name }}
+      BUILD_CONTEXT: src/${{ inputs.service_name }}
+      DOCKERFILE: src/${{ inputs.service_name }}/Dockerfile
+
+    outputs:
+      image_repository: ${{ env.IMAGE_REPOSITORY }}
+      image_tag: ${{ steps.generate-tag.outputs.image_tag }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Debug repository
+        run: |
+          pwd
+          ls -R .github/actions
+
+      - name: Validate Service Structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d "$BUILD_CONTEXT"
+          test -f "$DOCKERFILE"
+
+      - name: Generate Image Tag
+        id: generate-tag
+        uses: ./.github/actions/generate-tag
+
+      - name: Login to Docker Hub
+        uses: ./.github/actions/docker-login
+        with:
+          docker_username: ${{ secrets.DOCKER_USERNAME }}
+          docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Setup Docker Buildx
+        uses: ./.github/actions/setup-buildx
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ env.BUILD_CONTEXT }}
+          file: ${{ env.DOCKERFILE }}
+          push: true
+          tags: |
+            ${{ env.IMAGE_REPOSITORY }}:${{ steps.generate-tag.outputs.image_tag }}
+            ${{ env.IMAGE_REPOSITORY }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

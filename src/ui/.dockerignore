@@ -1,8 +1,119 @@
-Dockerfile
-.dockerignore
-docker-compose.yml
+###############################################################################
+# Version Control
+#
+# Git metadata is not required inside the Docker build context.
+###############################################################################
+.git
 .gitignore
-chart
-scripts
-target
-.idea
+
+
+###############################################################################
+# IDE & Editor Files
+#
+# Exclude project-specific settings created by IDEs and editors.
+###############################################################################
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+
+
+###############################################################################
+# Build Output
+#
+# Maven generates compiled classes and JARs under target/.
+# Since the Docker image builds the application itself, these
+# local artifacts are unnecessary.
+###############################################################################
+target/
+
+
+###############################################################################
+# Maven Logs
+###############################################################################
+*.log
+
+
+###############################################################################
+# Operating System Files
+###############################################################################
+.DS_Store
+Thumbs.db
+
+
+###############################################################################
+# Temporary Files
+###############################################################################
+tmp/
+temp/
+*.tmp
+
+
+###############################################################################
+# Documentation (Optional)
+#
+# Uncomment these if your application does not need them inside the image.
+#
+# README.md
+# docs/
+###############################################################################
+
+
+###############################################################################
+# Environment Files
+#
+# Never bake environment-specific configuration into the image.
+# These values should be supplied at runtime using environment
+# variables, ConfigMaps, or Secrets.
+###############################################################################
+.env
+.env.*
+!.env.example
+
+
+###############################################################################
+# Docker Files
+#
+# Keep the Dockerfile in the build context because Docker needs it.
+# Exclude Compose files unless they are required for the build.
+###############################################################################
+docker-compose.yml
+docker-compose.yaml
+compose.yml
+compose.yaml
+
+
+###############################################################################
+# Test Reports
+###############################################################################
+coverage/
+reports/
+
+
+###############################################################################
+# Node Modules
+#
+# Ignore only if the repository contains frontend assets.
+###############################################################################
+node_modules/
+
+
+###############################################################################
+# Archives
+###############################################################################
+*.zip
+*.tar
+*.gz
+*.tgz
+
+
+###############################################################################
+# Kubernetes & Helm (Optional)
+#
+# Exclude deployment manifests if they are not copied into the image.
+# This keeps the build context smaller.
+###############################################################################
+k8s/
+helm/
+charts/

@@ -1,0 +1,10 @@
+name: Setup Docker Buildx
+description: Set up Docker Buildx for image builds.
+author: OpenAI
+
+runs:
+  using: composite
+  steps:
+    # Initialize Buildx
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3

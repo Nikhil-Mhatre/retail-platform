@@ -1,0 +1,107 @@
+name: Update GitOps
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: Name of the microservice.
+        required: true
+        type: string
+      image_repository:
+        description: Docker image repository.
+        required: true
+        type: string
+      image_tag:
+        description: Docker image tag.
+        required: true
+        type: string
+    secrets:
+      GITOPS_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gitops-${{ inputs.service_name }}
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Update Helm Values
+    runs-on: ubuntu-latest
+
+    env:
+      VALUES_FILE: gitops/charts/${{ inputs.service_name }}/values.yaml
+
+    steps:
+      - name: Checkout GitOps Repository
+        uses: actions/checkout@v4
+        with:
+          repository: Nikhil-Mhatre/retail-platform-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+          fetch-depth: 0
+
+      - name: Install yq
+        uses: ./.github/actions/install-yq
+
+      - name: Configure Git
+        uses: ./.github/actions/git-config
+
+      - name: Update Image Values
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f "$VALUES_FILE"
+
+          yq -i '.image.repository = "${{ inputs.image_repository }}"' "$VALUES_FILE"
+          yq -i '.image.tag = "${{ inputs.image_tag }}"' "$VALUES_FILE"
+
+      - name: Verify Changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git -C gitops diff -- "$VALUES_FILE"
+
+      - name: Commit Changes
+        id: commit
+        shell: bash
+        working-directory: gitops
+        run: |
+          set -euo pipefail
+
+          git add "charts/${{ inputs.service_name }}/values.yaml"
+
+          if git diff --cached --quiet; then
+            echo "No changes detected."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -m "chore(gitops): update ${{ inputs.service_name }} image to ${{ inputs.image_tag }}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push Changes
+        if: steps.commit.outputs.changed == 'true'
+        shell: bash
+        working-directory: gitops
+        run: |
+          set -euo pipefail
+
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+
+            git pull --rebase
+
+            if [ "$attempt" -lt 5 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+
+          echo "Failed to push changes after 5 attempts."
+          exit 1

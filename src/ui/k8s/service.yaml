@@ -1,0 +1,35 @@
+###############################################################################
+# Service
+#
+# A Service provides a stable network endpoint for Pods.
+#
+# The selector identifies Pods using the label:
+#
+# app: ui
+#
+# Kubernetes automatically forwards traffic from the Service
+# to healthy Pods.
+###############################################################################
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: ui
+
+  namespace: ui
+
+spec:
+  type: ClusterIP
+
+  selector:
+    app: ui
+
+  ports:
+    - name: http
+
+      port: 80
+
+      targetPort: 8080
+
+      protocol: TCP

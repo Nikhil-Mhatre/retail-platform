@@ -1,0 +1,119 @@
+###############################################################################
+# Deployment
+#
+# A Deployment manages the desired state of Pods.
+#
+# Responsibilities:
+# - Creates ReplicaSets
+# - Maintains desired replica count
+# - Performs rolling updates
+# - Self-heals failed Pods
+###############################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: ui
+
+  namespace: ui
+
+  labels:
+    app: ui
+
+spec:
+  # Desired number of application instances.
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: ui
+
+  template:
+    metadata:
+      labels:
+        app: ui
+
+    spec:
+      containers:
+        - name: ui
+
+          image: nikhilmhatre0317/ui:1.0.0
+
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - containerPort: 8080
+          ###########################################################################
+          # Startup Probe
+          #
+          # Checks whether the application has completed startup.
+          # Kubernetes will not run readiness or liveness probes until this succeeds.
+          ###########################################################################
+          startupProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+
+            failureThreshold: 30
+            periodSeconds: 5
+          ###########################################################################
+          # Readiness Probe
+          #
+          # Determines whether the application is ready to receive traffic.
+          # If this probe fails, the Pod remains running but is removed from the
+          # Service endpoints until it becomes ready again.
+          ###########################################################################
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          ###########################################################################
+          # Liveness Probe
+          #
+          # Determines whether the application is still healthy.
+          # If this probe fails repeatedly, Kubernetes restarts the container.
+          ###########################################################################
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: ui-config
+                  key: SPRING_PROFILES_ACTIVE
+
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: DB_USERNAME
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: DB_PASSWORD
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

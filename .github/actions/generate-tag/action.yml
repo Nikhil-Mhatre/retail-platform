@@ -1,0 +1,19 @@
+name: Generate Image Tag
+description: Generate a Docker image tag from the current commit SHA.
+
+outputs:
+  image_tag:
+    description: Generated Docker image tag.
+    value: ${{ steps.generate.outputs.image_tag }}
+
+runs:
+  using: composite
+  steps:
+    - id: generate
+      name: Generate image tag
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        # Generate image tag
+        echo "image_tag=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"

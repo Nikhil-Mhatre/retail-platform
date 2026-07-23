@@ -1,0 +1,13 @@
+###############################################################################
+# Namespace
+#
+# A Namespace provides logical isolation for Kubernetes resources.
+# It allows multiple applications or environments to coexist within
+# the same cluster without resource name conflicts.
+###############################################################################
+
+apiVersion: v1
+kind: Namespace
+
+metadata:
+  name: ui
