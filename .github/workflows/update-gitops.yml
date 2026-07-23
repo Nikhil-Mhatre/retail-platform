@@ -69,12 +69,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          git -C gitops diff -- "$VALUES_FILE"
+          git -C diff -- "$VALUES_FILE"
 
       - name: Commit Changes
         id: commit
         shell: bash
-        working-directory: gitops
         run: |
           set -euo pipefail
 
@@ -92,7 +91,6 @@ jobs:
       - name: Push Changes
         if: steps.commit.outputs.changed == 'true'
         shell: bash
-        working-directory: gitops
         run: |
           set -euo pipefail
 
