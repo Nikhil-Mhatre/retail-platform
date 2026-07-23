@@ -13,9 +13,6 @@ on:
       DOCKER_PASSWORD:
         required: true
     outputs:
-      image_repository:
-        description: Docker image repository.
-        value: ${{ jobs.build.outputs.image_repository }}
       image_tag:
         description: Generated Docker image tag.
         value: ${{ jobs.build.outputs.image_tag }}
@@ -38,17 +35,11 @@ jobs:
       DOCKERFILE: src/${{ inputs.service_name }}/Dockerfile
 
     outputs:
-      image_repository: ${{ steps.image_repository.outputs.image_repository }}
       image_tag: ${{ steps.generate-tag.outputs.image_tag }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Debug repository
-        run: |
-          pwd
-          ls -R .github/actions
 
       - name: Validate Service Structure
         shell: bash
@@ -61,17 +52,6 @@ jobs:
         id: generate-tag
         uses: ./.github/actions/generate-tag
 
-      - name: Export image repository
-        id: image_repository
-        shell: bash
-        run: |
-          echo "image_repository=$IMAGE_REPOSITORY" >> "$GITHUB_OUTPUT"
-
-      - name: Debug exported output
-        shell: bash
-        run: |
-          echo "Exported: ${{ steps.image_repository.outputs.image_repository }}"
-
       - name: Login to Docker Hub
         uses: ./.github/actions/docker-login
         with:
@@ -80,11 +60,6 @@ jobs:
 
       - name: Setup Docker Buildx
         uses: ./.github/actions/setup-buildx
-
-      - name: Debug image repository
-        shell: bash
-        run: |
-          echo "IMAGE_REPOSITORY=$IMAGE_REPOSITORY"
 
       - name: Build and Push Image
         uses: docker/build-push-action@v6
@@ -97,7 +72,3 @@ jobs:
             ${{ env.IMAGE_REPOSITORY }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Dump step outputs
-        run: |
-          echo "Repo = ${{ steps.image_repository.outputs.image_repository }}"

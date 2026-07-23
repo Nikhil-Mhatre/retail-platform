@@ -15,21 +15,11 @@ jobs:
       service_name: ui
     secrets: inherit
 
-  debug:
-    name: Debug Outputs
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          echo "Repository: ${{ needs.build.outputs.image_repository }}"
-          echo "Tag: ${{ needs.build.outputs.image_tag }}"
-
   update-gitops:
     name: Update GitOps
     needs: build
     uses: ./.github/workflows/deploy.yml
     with:
       service_name: ui
-      image_repository: ${{ needs.build.outputs.image_repository }}
       image_tag: ${{ needs.build.outputs.image_tag }}
     secrets: inherit
