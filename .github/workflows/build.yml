@@ -45,6 +45,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Debug repository
+        run: |
+          pwd
+          ls -R .github/actions
+
       - name: Validate Service Structure
         shell: bash
         run: |
@@ -62,6 +67,11 @@ jobs:
         run: |
           echo "image_repository=$IMAGE_REPOSITORY" >> "$GITHUB_OUTPUT"
 
+      - name: Debug exported output
+        shell: bash
+        run: |
+          echo "Exported: ${{ steps.image_repository.outputs.image_repository }}"
+
       - name: Login to Docker Hub
         uses: ./.github/actions/docker-login
         with:
@@ -70,6 +80,11 @@ jobs:
 
       - name: Setup Docker Buildx
         uses: ./.github/actions/setup-buildx
+
+      - name: Debug image repository
+        shell: bash
+        run: |
+          echo "IMAGE_REPOSITORY=$IMAGE_REPOSITORY"
 
       - name: Build and Push Image
         uses: docker/build-push-action@v6
