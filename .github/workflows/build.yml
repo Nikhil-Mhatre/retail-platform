@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      IMAGE_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/retail_platform_${{ inputs.service_name }}
+      IMAGE_REPOSITORY: ${{ secrets.DOCKER_USERNAME }}/retail-platform/${{ inputs.service_name }}
       BUILD_CONTEXT: src/${{ inputs.service_name }}
       DOCKERFILE: src/${{ inputs.service_name }}/Dockerfile
 

@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build Image
-    uses: ./.github/workflows/build-image.yml
+    uses: ./.github/workflows/build.yml
     with:
       service_name: ui
     secrets: inherit
@@ -18,7 +18,7 @@ jobs:
   update-gitops:
     name: Update GitOps
     needs: build
-    uses: ./.github/workflows/update-gitops.yml
+    uses: ./.github/workflows/deploy.yml
     with:
       service_name: ui
       image_repository: ${{ needs.build.outputs.image_repository }}
