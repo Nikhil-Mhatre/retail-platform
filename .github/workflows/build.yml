@@ -67,6 +67,11 @@ jobs:
         run: |
           echo "image_repository=$IMAGE_REPOSITORY" >> "$GITHUB_OUTPUT"
 
+      - name: Debug exported output
+        shell: bash
+        run: |
+          echo "Exported: ${{ steps.image-repository.outputs.image_repository }}"
+
       - name: Login to Docker Hub
         uses: ./.github/actions/docker-login
         with:
@@ -75,6 +80,11 @@ jobs:
 
       - name: Setup Docker Buildx
         uses: ./.github/actions/setup-buildx
+
+      - name: Debug image repository
+        shell: bash
+        run: |
+          echo "IMAGE_REPOSITORY=$IMAGE_REPOSITORY"
 
       - name: Build and Push Image
         uses: docker/build-push-action@v6
