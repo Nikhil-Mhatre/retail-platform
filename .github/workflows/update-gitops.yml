@@ -56,20 +56,23 @@ jobs:
 
       - name: Update Image Values
         shell: bash
+        env:
+          IMAGE_REPOSITORY: ${{ inputs.image_repository }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
         run: |
           set -euo pipefail
 
           test -f "$VALUES_FILE"
 
-          yq -i '.image.repository = "${{ inputs.image_repository }}"' "$VALUES_FILE"
-          yq -i '.image.tag = "${{ inputs.image_tag }}"' "$VALUES_FILE"
+          yq -i '.image.repository = strenv(IMAGE_REPOSITORY)' "$VALUES_FILE"
+          yq -i '.image.tag = strenv(IMAGE_TAG)' "$VALUES_FILE"
 
       - name: Verify Changes
         shell: bash
         run: |
           set -euo pipefail
 
-          git -C diff -- "$VALUES_FILE"
+          git diff -- "$VALUES_FILE"
 
       - name: Commit Changes
         id: commit
