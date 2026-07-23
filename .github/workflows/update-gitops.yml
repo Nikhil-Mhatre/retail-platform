@@ -44,10 +44,16 @@ jobs:
           fetch-depth: 0
 
       - name: Install yq
-        uses: ./.github/actions/install-yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+          yq --version
 
       - name: Configure Git
-        uses: ./.github/actions/git-config
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Update Image Values
         shell: bash
