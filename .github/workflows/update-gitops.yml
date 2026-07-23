@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      VALUES_FILE: gitops/charts/${{ inputs.service_name }}/values.yaml
+      VALUES_FILE: charts/${{ inputs.service_name }}/values.yaml
 
     steps:
       - name: Checkout GitOps Repository
@@ -40,7 +40,6 @@ jobs:
         with:
           repository: Nikhil-Mhatre/retail-platform-gitops
           token: ${{ secrets.GITOPS_TOKEN }}
-          path: gitops
           fetch-depth: 0
 
       - name: Install yq
